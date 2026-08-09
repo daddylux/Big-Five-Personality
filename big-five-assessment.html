@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Big Five Personality Assessment</title>
+<style>
+  :root{
+    --bg:#fdf6ec;
+    --card:#ffffff;
+    --ink:#2b2b3a;
+    --muted:#6b6b7b;
+    --line:#ece4d7;
+    --shadow:0 10px 30px rgba(60,50,40,.10);
+    /* trait colors */
+    --extra:#ff8a3d;   /* orange */
+    --agree:#2fb37a;   /* green */
+    --consc:#3d7bff;   /* blue */
+    --neuro:#a05cff;   /* purple */
+    --open:#00b7c2;    /* teal */
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:"Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+    background:
+      radial-gradient(1200px 500px at 10% -10%, #ffe9d6 0%, transparent 60%),
+      radial-gradient(1000px 500px at 100% 0%, #e5f6ff 0%, transparent 55%),
+      var(--bg);
+    color:var(--ink);
+    min-height:100vh;
+    line-height:1.55;
+  }
+  .wrap{max-width:760px;margin:0 auto;padding:28px 20px 80px}
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:22px;
+    box-shadow:var(--shadow);
+    padding:32px;
+  }
+  h1{font-size:2rem;margin:0 0 6px;letter-spacing:-.5px}
+  h2{font-size:1.35rem;margin:0 0 10px}
+  .subtitle{color:var(--muted);margin:0 0 22px}
+  .rainbow{
+    background:linear-gradient(90deg,var(--extra),var(--agree),var(--consc),var(--neuro),var(--open));
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    font-weight:800;
+  }
+  .lead{font-size:1.02rem;color:#40404f}
+  ul.info{margin:14px 0 8px;padding-left:20px;color:#40404f}
+  ul.info li{margin:6px 0}
+  .btn{
+    appearance:none;border:none;cursor:pointer;
+    font-size:1.05rem;font-weight:700;color:#fff;
+    padding:14px 30px;border-radius:999px;
+    background:linear-gradient(90deg,var(--extra),var(--neuro));
+    box-shadow:0 8px 20px rgba(160,92,255,.28);
+    transition:transform .12s ease,box-shadow .12s ease;
+  }
+  .btn:hover{transform:translateY(-2px);box-shadow:0 12px 26px rgba(160,92,255,.34)}
+  .btn:active{transform:translateY(0)}
+  .btn.secondary{
+    background:#fff;color:var(--ink);border:1.5px solid var(--line);
+    box-shadow:none;font-weight:600;padding:12px 22px;font-size:.98rem;
+  }
+  .btn.secondary:hover{transform:none;border-color:#d9cfbe}
+  .center{text-align:center}
+  .hidden{display:none}
+  .disclaimer{font-size:.85rem;color:var(--muted);margin-top:20px}
+
+  /* progress */
+  .progress-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:.9rem;color:var(--muted)}
+  .bar{height:12px;background:#f0e8db;border-radius:999px;overflow:hidden}
+  .bar > span{
+    display:block;height:100%;width:0%;
+    background:linear-gradient(90deg,var(--extra),var(--agree),var(--consc),var(--neuro),var(--open));
+    border-radius:999px;transition:width .35s ease;
+  }
+
+  /* question */
+  .qnum{font-weight:700;color:var(--muted);font-size:.85rem;letter-spacing:.5px;text-transform:uppercase}
+  .statement{font-size:1.5rem;font-weight:700;margin:10px 0 4px;min-height:2.2em}
+  .prompt{color:var(--muted);margin:0 0 22px}
+  .likert{display:flex;gap:8px;justify-content:space-between;flex-wrap:wrap}
+  .likert button{
+    flex:1 1 0;min-width:44px;
+    aspect-ratio:1/1;
+    border-radius:14px;border:2px solid var(--line);background:#fff;
+    font-size:1.1rem;font-weight:700;color:var(--ink);cursor:pointer;
+    transition:all .12s ease;position:relative;
+  }
+  .likert button:hover{border-color:var(--neuro);transform:translateY(-2px)}
+  .likert button.selected{background:var(--neuro);border-color:var(--neuro);color:#fff}
+  .scale-labels{display:flex;justify-content:space-between;margin-top:10px;font-size:.82rem;color:var(--muted)}
+  .nav{display:flex;justify-content:space-between;align-items:center;margin-top:26px}
+
+  /* results */
+  .result-trait{
+    border:1px solid var(--line);border-left:8px solid var(--tc,#ccc);
+    border-radius:16px;padding:20px 22px;margin:16px 0;background:#fff;
+  }
+  .rt-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+  .rt-name{font-size:1.25rem;font-weight:800;color:var(--tc)}
+  .rt-score{font-size:1.05rem;font-weight:700;color:var(--ink)}
+  .band-pill{
+    display:inline-block;font-size:.78rem;font-weight:800;letter-spacing:.4px;
+    padding:3px 12px;border-radius:999px;color:#fff;background:var(--tc);text-transform:uppercase;
+  }
+  .meter{height:14px;background:#f0e8db;border-radius:999px;overflow:hidden;margin:14px 0 6px;position:relative}
+  .meter > span{display:block;height:100%;background:var(--tc);border-radius:999px;transition:width .6s ease}
+  .meter-scale{display:flex;justify-content:space-between;font-size:.72rem;color:var(--muted)}
+  .rt-desc{margin:12px 0 0;color:#3a3a48}
+  .rt-brief{margin:8px 0 0;color:var(--muted);font-size:.92rem;font-style:italic}
+  .summary-note{background:#fbf4e8;border:1px dashed #e6d8bf;border-radius:14px;padding:16px 18px;margin:6px 0 4px;color:#5a5140;font-size:.92rem}
+  .fade{animation:fade .35s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  @media (max-width:560px){
+    .card{padding:22px}
+    h1{font-size:1.6rem}
+    .statement{font-size:1.25rem}
+    .likert button{min-width:38px;font-size:1rem}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- INTRO -->
+  <section id="intro" class="card fade">
+    <h1><span class="rainbow">Big Five</span> Personality Assessment</h1>
+    <p class="subtitle">A quick, science-based look at your personality across five core traits.</p>
+    <p class="lead">This assessment uses the public-domain <strong>50-item IPIP Big-Five Factor Markers</strong> (Goldberg, 1992). You'll rate 50 short statements about yourself, presented in random order, on a scale from 1 to 7.</p>
+    <ul class="info">
+      <li><strong>50 questions</strong> &middot; about 5&ndash;7 minutes</li>
+      <li>Answer honestly &mdash; there are no right or wrong answers</li>
+      <li>Rate how much each statement describes you, from <em>Strongly Disagree (1)</em> to <em>Strongly Agree (7)</em></li>
+      <li>At the end you'll get a score and description for each of the five traits</li>
+    </ul>
+    <div class="center" style="margin-top:26px">
+      <button class="btn" onclick="startQuiz()">Start the assessment &rarr;</button>
+    </div>
+    <p class="disclaimer">This is an educational self-reflection tool, not a clinical or diagnostic instrument. Your answers stay on your device and are never sent anywhere.</p>
+  </section>
+
+  <!-- QUIZ -->
+  <section id="quiz" class="card hidden">
+    <div class="progress-head">
+      <span id="progressLabel">Question 1 of 50</span>
+      <span id="progressPct">0%</span>
+    </div>
+    <div class="bar"><span id="progressBar"></span></div>
+
+    <div id="questionArea" style="margin-top:26px">
+      <div class="qnum" id="qNum">Question 1</div>
+      <div class="statement" id="statement">&hellip;</div>
+      <p class="prompt">How accurately does this describe you?</p>
+      <div class="likert" id="likert"></div>
+      <div class="scale-labels">
+        <span>1 &middot; Strongly disagree</span>
+        <span>4 &middot; Neutral</span>
+        <span>7 &middot; Strongly agree</span>
+      </div>
+    </div>
+
+    <div class="nav">
+      <button class="btn secondary" id="backBtn" onclick="goBack()">&larr; Back</button>
+      <span style="font-size:.85rem;color:var(--muted)" id="autoHint">Pick a number to continue</span>
+    </div>
+  </section>
+
+  <!-- RESULTS -->
+  <section id="results" class="card hidden">
+    <h1 class="center">Your <span class="rainbow">personality profile</span></h1>
+    <p class="subtitle center">Each score is the average of your answers for that trait, on a scale of 1 (low) to 7 (high).</p>
+    <div id="resultsArea"></div>
+    <div class="summary-note">
+      <strong>How to read this:</strong> Scores from 1.0&ndash;3.0 are <em>Low</em>, 3.1&ndash;5.0 are <em>Moderate</em>, and 5.1&ndash;7.0 are <em>High</em>. No score is "good" or "bad" &mdash; each trait is a spectrum, and every point on it has strengths.
+    </div>
+    <div class="center" style="margin-top:24px">
+      <button class="btn" onclick="restart()">Take it again</button>
+    </div>
+    <p class="disclaimer">Based on the IPIP Big-Five Factor Markers (Goldberg, 1992), a public-domain instrument. Educational use only &mdash; not a clinical assessment.</p>
+  </section>
+
+</div>
+
+<script>
+/* ============================================================
+   50-item IPIP Big-Five Factor Markers (Goldberg, public domain)
+   key: "+" = keyed in the trait direction, "-" = reverse-keyed
+   ============================================================ */
+const TRAITS = {
+  E: {name:"Extraversion", color:"var(--extra)"},
+  A: {name:"Agreeableness", color:"var(--agree)"},
+  C: {name:"Conscientiousness", color:"var(--consc)"},
+  N: {name:"Neuroticism", color:"var(--neuro)"},
+  O: {name:"Openness to Experience", color:"var(--open)"}
+};
+
+const ITEMS = [
+  // Extraversion
+  {t:"E",k:"+",s:"I am the life of the party."},
+  {t:"E",k:"-",s:"I don't talk a lot."},
+  {t:"E",k:"+",s:"I feel comfortable around people."},
+  {t:"E",k:"-",s:"I keep in the background."},
+  {t:"E",k:"+",s:"I start conversations."},
+  {t:"E",k:"-",s:"I have little to say."},
+  {t:"E",k:"+",s:"I talk to a lot of different people at parties."},
+  {t:"E",k:"-",s:"I don't like to draw attention to myself."},
+  {t:"E",k:"+",s:"I don't mind being the center of attention."},
+  {t:"E",k:"-",s:"I am quiet around strangers."},
+  // Agreeableness
+  {t:"A",k:"-",s:"I feel little concern for others."},
+  {t:"A",k:"+",s:"I am interested in people."},
+  {t:"A",k:"-",s:"I insult people."},
+  {t:"A",k:"+",s:"I sympathize with others' feelings."},
+  {t:"A",k:"-",s:"I am not interested in other people's problems."},
+  {t:"A",k:"+",s:"I have a soft heart."},
+  {t:"A",k:"-",s:"I am not really interested in others."},
+  {t:"A",k:"+",s:"I take time out for others."},
+  {t:"A",k:"+",s:"I feel others' emotions."},
+  {t:"A",k:"+",s:"I make people feel at ease."},
+  // Conscientiousness
+  {t:"C",k:"+",s:"I am always prepared."},
+  {t:"C",k:"-",s:"I leave my belongings around."},
+  {t:"C",k:"+",s:"I pay attention to details."},
+  {t:"C",k:"-",s:"I make a mess of things."},
+  {t:"C",k:"+",s:"I get chores done right away."},
+  {t:"C",k:"-",s:"I often forget to put things back in their proper place."},
+  {t:"C",k:"+",s:"I like order."},
+  {t:"C",k:"-",s:"I shirk my duties."},
+  {t:"C",k:"+",s:"I follow a schedule."},
+  {t:"C",k:"+",s:"I am exacting in my work."},
+  // Neuroticism
+  {t:"N",k:"+",s:"I get stressed out easily."},
+  {t:"N",k:"-",s:"I am relaxed most of the time."},
+  {t:"N",k:"+",s:"I worry about things."},
+  {t:"N",k:"-",s:"I seldom feel blue."},
+  {t:"N",k:"+",s:"I am easily disturbed."},
+  {t:"N",k:"+",s:"I get upset easily."},
+  {t:"N",k:"+",s:"I change my mood a lot."},
+  {t:"N",k:"+",s:"I have frequent mood swings."},
+  {t:"N",k:"+",s:"I get irritated easily."},
+  {t:"N",k:"+",s:"I often feel blue."},
+  // Openness
+  {t:"O",k:"+",s:"I have a rich vocabulary."},
+  {t:"O",k:"-",s:"I have difficulty understanding abstract ideas."},
+  {t:"O",k:"+",s:"I have a vivid imagination."},
+  {t:"O",k:"-",s:"I am not interested in abstract ideas."},
+  {t:"O",k:"+",s:"I have excellent ideas."},
+  {t:"O",k:"-",s:"I do not have a good imagination."},
+  {t:"O",k:"+",s:"I am quick to understand things."},
+  {t:"O",k:"+",s:"I use difficult words."},
+  {t:"O",k:"+",s:"I spend time reflecting on things."},
+  {t:"O",k:"+",s:"I am full of ideas."}
+];
+
+/* Brief neutral description of each trait */
+const BRIEF = {
+  E:"Extraversion reflects how much you seek stimulation and energy from the outside world and other people. High scorers are outgoing and sociable; low scorers (introverts) are more reserved and prefer quieter settings.",
+  A:"Agreeableness reflects how much you value getting along with others through compassion, cooperation, and trust. High scorers are warm and considerate; low scorers are more competitive, skeptical, or blunt.",
+  C:"Conscientiousness reflects how organized, dependable, and goal-directed you are. High scorers are disciplined and detail-oriented; low scorers are more spontaneous and flexible.",
+  N:"Neuroticism reflects how readily you experience negative emotions such as anxiety, worry, and mood swings. High scorers feel stress more intensely; low scorers are calm and emotionally steady.",
+  O:"Openness to Experience reflects curiosity, imagination, and appreciation for new ideas and novelty. High scorers are inventive and intellectually curious; low scorers prefer routine and the familiar."
+};
+
+/* Custom descriptions by trait and band */
+const DESC = {
+  E:{
+    Low:"Your answers suggest you lean introverted. You likely prefer smaller gatherings or one-on-one time over big crowds, recharge through solitude, and are comfortable staying in the background. This reflects a preference for calm and depth rather than shyness.",
+    Moderate:"You fall in the middle of the introversion–extraversion spectrum (sometimes called an “ambivert”). You can enjoy socializing and being in the spotlight at times, but you also value periods of quiet. You tend to adapt your social energy to the situation.",
+    High:"Your answers suggest you're energized by social interaction. You likely feel comfortable meeting new people, enjoy being active and engaged, and are often the one who gets conversations going. Too much time alone may leave you feeling restless."
+  },
+  A:{
+    Low:"Your answers suggest you prioritize honesty and your own judgment over always keeping the peace. You may be more skeptical, competitive, or direct, and you're comfortable challenging others. This can make you a tough negotiator and an independent thinker.",
+    Moderate:"You balance warmth toward others with a healthy regard for your own interests. You can be compassionate and cooperative, but you're also willing to be direct or skeptical when the situation calls for it.",
+    High:"You come across as warm, considerate, and cooperative. You tend to trust others, care about their feelings, and go out of your way to help. People likely find you easy to get along with — though you may sometimes put others' needs ahead of your own."
+  },
+  C:{
+    Low:"Your answers suggest you favor spontaneity and flexibility over strict structure. You may find rigid routines and detailed planning constraining, and prefer to keep your options open. This can make you adaptable and easygoing, though staying organized may take extra effort.",
+    Moderate:"You balance structure with flexibility. You can be organized and dependable when it matters, but you're also comfortable being spontaneous. You may prefer to stay adaptable rather than plan every detail in advance.",
+    High:"You appear organized, reliable, and goal-directed. You likely plan ahead, pay attention to detail, follow through on commitments, and keep your environment in order. Others probably see you as someone they can count on."
+  },
+  N:{
+    Low:"You appear emotionally stable and resilient. You likely stay calm under pressure, recover quickly from setbacks, and aren't easily rattled by stress or worry. This steadiness can be a real asset in demanding situations.",
+    Moderate:"You experience the normal ups and downs of emotional life. You can feel stressed or worried at times, but you also have periods of calm and generally bounce back from setbacks. Your emotional reactions are fairly typical and balanced.",
+    High:"Your answers suggest you feel emotions — especially stress, worry, and mood shifts — quite intensely, and may be more sensitive to pressure. On the positive side, this sensitivity can bring empathy and awareness of risks; calming and coping strategies can help you channel it."
+  },
+  O:{
+    Low:"Your answers suggest you prefer the concrete, familiar, and practical over the abstract or novel. You likely value routine, tradition, and clear answers, and may find highly theoretical or experimental things less appealing. This reflects a grounded, down-to-earth style.",
+    Moderate:"You balance curiosity with a preference for the familiar. You're open to new ideas and experiences in some areas, but you also appreciate practicality and the tried-and-true. You tend to explore selectively rather than constantly chase novelty.",
+    High:"You come across as curious, imaginative, and open to new ideas. You likely enjoy exploring concepts, art, and unfamiliar experiences, and are drawn to variety and creativity over routine. You may love learning for its own sake."
+  }
+};
+
+const TRAIT_ORDER = ["E","A","C","N","O"];
+
+/* ----- state ----- */
+let order = [];       // shuffled indices into ITEMS
+let responses = [];   // responses[itemIndex] = 1..7 (raw)
+let pos = 0;          // current position in `order`
+
+function shuffle(arr){
+  for(let i=arr.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]]=[arr[j],arr[i]];
+  }
+  return arr;
+}
+
+function startQuiz(){
+  order = shuffle(ITEMS.map((_,i)=>i));
+  responses = new Array(ITEMS.length).fill(null);
+  pos = 0;
+  document.getElementById("intro").classList.add("hidden");
+  document.getElementById("results").classList.add("hidden");
+  document.getElementById("quiz").classList.remove("hidden");
+  renderQuestion();
+}
+
+function renderQuestion(){
+  const itemIdx = order[pos];
+  const item = ITEMS[itemIdx];
+  const total = ITEMS.length;
+
+  document.getElementById("progressLabel").textContent = `Question ${pos+1} of ${total}`;
+  const pct = Math.round((pos/total)*100);
+  document.getElementById("progressPct").textContent = pct + "%";
+  document.getElementById("progressBar").style.width = pct + "%";
+
+  document.getElementById("qNum").textContent = `Question ${pos+1}`;
+  const stmt = document.getElementById("statement");
+  stmt.textContent = item.s;
+  stmt.classList.remove("fade"); void stmt.offsetWidth; stmt.classList.add("fade");
+
+  // build likert buttons
+  const likert = document.getElementById("likert");
+  likert.innerHTML = "";
+  for(let v=1; v<=7; v++){
+    const b = document.createElement("button");
+    b.textContent = v;
+    b.setAttribute("aria-label", "Rate "+v);
+    if(responses[itemIdx] === v) b.classList.add("selected");
+    b.onclick = ()=>choose(v);
+    likert.appendChild(b);
+  }
+
+  document.getElementById("backBtn").style.visibility = pos===0 ? "hidden" : "visible";
+  document.getElementById("autoHint").textContent =
+    responses[itemIdx] ? "Pick a number or press Back" : "Pick a number to continue";
+}
+
+function choose(v){
+  const itemIdx = order[pos];
+  responses[itemIdx] = v;
+  // highlight
+  const btns = document.querySelectorAll("#likert button");
+  btns.forEach((b,i)=>b.classList.toggle("selected", (i+1)===v));
+  // advance
+  setTimeout(()=>{
+    if(pos < ITEMS.length - 1){
+      pos++;
+      renderQuestion();
+    } else {
+      finish();
+    }
+  }, 220);
+}
+
+function goBack(){
+  if(pos>0){ pos--; renderQuestion(); }
+}
+
+function scoreValue(item, raw){
+  // reverse-key: 8 - raw on a 1..7 scale
+  return item.k === "+" ? raw : (8 - raw);
+}
+
+function computeScores(){
+  const sums = {E:0,A:0,C:0,N:0,O:0};
+  const counts = {E:0,A:0,C:0,N:0,O:0};
+  ITEMS.forEach((item,i)=>{
+    const raw = responses[i];
+    if(raw==null) return;
+    sums[item.t] += scoreValue(item, raw);
+    counts[item.t] += 1;
+  });
+  const out = {};
+  TRAIT_ORDER.forEach(t=>{
+    out[t] = counts[t] ? sums[t]/counts[t] : 0;
+  });
+  return out;
+}
+
+function bandFor(score){
+  if(score <= 3.0) return "Low";
+  if(score <= 5.0) return "Moderate";
+  return "High";
+}
+
+function finish(){
+  document.getElementById("progressBar").style.width = "100%";
+  document.getElementById("progressPct").textContent = "100%";
+  const scores = computeScores();
+  renderResults(scores);
+  document.getElementById("quiz").classList.add("hidden");
+  const r = document.getElementById("results");
+  r.classList.remove("hidden");
+  r.classList.remove("fade"); void r.offsetWidth; r.classList.add("fade");
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function renderResults(scores){
+  const area = document.getElementById("resultsArea");
+  area.innerHTML = "";
+  TRAIT_ORDER.forEach(t=>{
+    const score = scores[t];
+    const band = bandFor(score);
+    const pct = ((score - 1) / 6) * 100; // position on 1..7
+    const color = TRAITS[t].color;
+
+    const div = document.createElement("div");
+    div.className = "result-trait";
+    div.style.setProperty("--tc", color);
+    div.innerHTML = `
+      <div class="rt-head">
+        <span class="rt-name">${TRAITS[t].name}</span>
+        <span class="rt-score">${score.toFixed(2)} / 7 &nbsp;<span class="band-pill">${band}</span></span>
+      </div>
+      <div class="meter"><span style="width:${pct}%"></span></div>
+      <div class="meter-scale"><span>1 &middot; Low</span><span>4 &middot; Moderate</span><span>7 &middot; High</span></div>
+      <p class="rt-desc">${DESC[t][band]}</p>
+      <p class="rt-brief">${BRIEF[t]}</p>
+    `;
+    area.appendChild(div);
+  });
+}
+
+function restart(){
+  document.getElementById("results").classList.add("hidden");
+  document.getElementById("intro").classList.remove("hidden");
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+/* expose for inline handlers */
+window.startQuiz = startQuiz;
+window.goBack = goBack;
+window.restart = restart;
+</script>
+</body>
+</html>
